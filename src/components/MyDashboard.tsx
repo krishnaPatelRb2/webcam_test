@@ -4,11 +4,16 @@ import Webcam from "react-webcam";
 import Image from "next/image";
 import cv from "@techstark/opencv-js";
 import loaderIcon from "../app/spinner.gif"
+import cemeraIcon from "../app/focus.png"
+import retakeIcon from '../app/turn-up.png'
+import arrowIcon from '../app/arrow.png'
 function MyDashboard() {
   const webcamRef = useRef<Webcam>(null);
   const [snapshot, setSnapshot] = useState<string>("");
   const [score, setScore] = useState<number>(0)
   const [loader, setloader] = useState<boolean>(false);
+  const [clicked, setClicked] = useState<boolean>(false);
+  const [resultScreen, setresultScreen] = useState<boolean>(false);
 
 
   const takeSnapshot = useCallback(() => {
@@ -88,35 +93,56 @@ function MyDashboard() {
 
     }
 
+ const clickImage = ()=>{
+  // setloader(true)
+  takeSnapshot()
+  setClicked(true)
+ }
+
  const postImage = ()=>{
-  setloader(true)
+  setresultScreen(true)
+ }
+
+ const retakeImage = () => {
+  setClicked(false)
+  setresultScreen(false)
  }
 
   return (
-    <div className=" h-[100%]">
-      <div className="">
-        {
-          <Webcam
-            ref={webcamRef}
-            videoConstraints={{ facingMode: "environment" }}
-            muted={true}
-            style={{
-              textAlign: "center",
-              zIndex: 9,
-              height:'500px',
-              width:'100%'
-            }}
-          />
-        }
-
+    <div className="h-[100dvh]">
+      {!clicked && (
+        <div className="">
         
-      </div>
-      <div className="h-1/2">
-        {snapshot && (
-          <div className="w-full flex flex-col justify-center items-center">
-            <h2>laplacian Variance- {score}</h2>
-            {!loader && (<button className="text-[40px] px-3 py-1 bg-[green] rounded-[10px] text-white " onClick={postImage}>Post</button>)}
-            { loader && (<Image
+        <Webcam
+          ref={webcamRef}
+          videoConstraints={{ facingMode: "environment" }}
+          muted={true}
+          style={{
+            textAlign: "center",
+            zIndex: 9,
+            height:'100dvh',
+            width:'100dvw',
+            objectFit:'cover'
+          }}
+        />
+        {/* {!loader && (<button style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -110%)',
+        }} className="text-[30px] px-3 py-1 bg-[green] rounded-[10px] text-white " onClick={postImage}>Post</button>)} */}
+        
+
+      
+    </div>
+      )}
+      
+      <div className="">
+        {snapshot && clicked && !resultScreen && (
+          <div className="w-full flex flex-row justify-between">
+            {/* <h2>laplacian Variance- {score}</h2> */}
+            
+            { false && (<Image
               src={loaderIcon}
               width={50}
               height={50}
@@ -125,20 +151,84 @@ function MyDashboard() {
               
             />)} 
             <Image
-              style={{display:'none'}}
               src={snapshot}
-              width={300}
-              height={300}
+              width={100}
+              height={100}
               alt="Picture of the author"
               className="h-auto"
               onLoad={(e)=>{
                 checkBlur(e.target)
               }}
+              style={{
+                textAlign: "center",
+                height:'100dvh',
+                width:'100dvw',
+                objectFit:'cover'
+              }}
             />
+            {/* <div className="mt-[40px]">
+              <div>
+              <button className="text-[20px] px-3 py-1 bg-[green] rounded-[5px] text-white ">Retake</button>
+              </div>
+              <div>
+              <button className="text-[20px] px-3 py-1 bg-[green] rounded-[5px] text-white ">Send</button>
+              </div>
+            </div> */}
           </div>
+          
         )}
         
       </div>
+     { !resultScreen && (
+      <div>
+      {!clicked && <Image
+             onClick={clickImage}
+             src={cemeraIcon}
+             width={50}
+             height={50}
+             alt="Picture of the author"
+             className="h-auto"
+             style={{
+               position: 'fixed',
+               left: '50%',
+               transform: 'translate(-50%, -120%)',
+             }}
+           />}
+           {clicked && <Image
+             onClick={retakeImage}
+             src={retakeIcon}
+             width={50}
+             height={50}
+             alt="Picture of the author"
+             className="h-auto"
+             style={{
+               position: 'fixed',
+               left: '0',
+               transform: 'translate(8%, -120%)',
+             }}
+           />}
+           {clicked && <Image
+             onClick={postImage}
+             src={arrowIcon}
+             width={50}
+             height={50}
+             alt="Picture of the author"
+             className="h-auto"
+             style={{
+               position: 'fixed',
+               right: '0',
+               transform: 'translate(-8%, -120%)',
+             }}
+           />}
+      </div>
+     )}
+     {resultScreen && 
+     (
+       <div>
+        <button onClick={retakeImage}>Back</button>
+        <div>Extracted text</div>
+       </div>
+     )}
     </div>
   );
 }
